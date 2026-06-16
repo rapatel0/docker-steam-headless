@@ -45,6 +45,10 @@ function configure_nvidia_x_server {
     nvidia-xconfig --virtual="${DISPLAY_SIZEW:?}x${DISPLAY_SIZEH:?}" --depth="${DISPLAY_CDEPTH:?}" --mode=$(echo "${MODELINE:?}" | awk '{print $2}' | tr -d '"') --allow-empty-initial-configuration --no-probe-all-gpus --busid="${bus_id:?}" --no-multigpu --no-sli --no-base-mosaic --only-one-x-screen ${connected_monitor:?}
     # Allow SteamHeadless to run with an eGPU
     sed -i '/Driver\s\+"nvidia"/a\    Option         "AllowExternalGpus" "True"' /etc/X11/xorg.conf
+    # Homelab (PiKVM): the 4090 HDMI feeds the PiKVM capture sink; without
+    # this the nvidia driver treats it as a connected monitor and Xorg
+    # cycles every ~5s. Tell the driver to ignore the sink.
+    sed -i '/Driver\s\+"nvidia"/a\    Option         "UseDisplayDevice" "none"' /etc/X11/xorg.conf
     # Configure primary GPU
     sed -i '/Driver\s\+"nvidia"/a\    Option         "PrimaryGPU" "yes"' /etc/X11/xorg.conf
     # Force X server to start even if no display devices are connected

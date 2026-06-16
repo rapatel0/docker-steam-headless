@@ -23,6 +23,10 @@ trap _term SIGTERM SIGINT
 if [ $(grep autostart /etc/supervisor.d/udev.ini 2> /dev/null) == "autostart=true" ]; then
     wait_for_udev
 fi
+# Homelab: clear a stale X lock/socket from a previous unclean exit so
+# the server can start instead of "Server is already active".
+_dn="${DISPLAY#:}"; _dn="${_dn%%.*}"
+rm -f "/tmp/.X${_dn}-lock" "/tmp/.X11-unix/X${_dn}" 2>/dev/null || true
 # Run X server
 /usr/bin/Xorg \
     -ac \
